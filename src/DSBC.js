@@ -113,7 +113,7 @@ function DSBC() {
     }
 
     chart.data = (value) => {
-        console.log(value);
+        // console.log(value);
         let copyObj = JSON.parse(JSON.stringify(value));//不影響原資料
         let dataType = typeof (copyObj[0]);
 
@@ -214,7 +214,7 @@ function DSBC() {
     }
     function chart() {
         function stackedBar(chartData, series1DomainMax = null, series2DomainMax = null) {
-            console.debug(chartData);
+            // console.debug(chartData);
 
             const convert_download_unit = (value, unitBefore, unitAfter = undefined) => {
                 let newValue, newUnit;
@@ -424,9 +424,9 @@ function DSBC() {
                 chartData.data = convertData(chartData.data);
                 return chartData.data;
             }();
-            console.debug(data);
+            // console.debug(data);
             const dataKeys = data.columns;//series key
-            console.debug(dataKeys);
+            // console.debug(dataKeys);
             //放入seriesColor
             ~function () {
                 const seriesColor = ["#d53e4f", "#3288bd"];
@@ -435,7 +435,7 @@ function DSBC() {
 
             //===取出所有主要的key(ex:每個DB)並去重複
             const subjects = Array.from(new Set([].concat(...dataKeys.map(key => [].concat(...data[key].columns)))));
-            console.debug(subjects);
+            // console.debug(subjects);
             //===取出所有最下層key(ex:每個DB的年份)並去重複
             const categories = Array.from(new Set([].concat(...dataKeys.map(key => [].concat(...data[key].columns.map(k => data[key][k].columns))))));
             // console.debug(categories);
@@ -610,7 +610,6 @@ function DSBC() {
                                 refreshing = g => {
                                     g.selectAll("line").attr('opacity', 0);
 
-
                                     // let domain = g.selectAll(".domain").clone(true);
                                     // console.debug(domain)
                                     // tooltipGroup.node().append(totalTooltip.node());
@@ -628,7 +627,6 @@ function DSBC() {
                                     g.select('.axisName').attr("transform", `translate(0,${height - margin.bottom * 0.2})`)
                                 }
                             }
-
                             g.attr("transform", `translate(${translate})`)
                                 // .call(removeAxis)
                                 .call(d3[axisPos](subjectScale).tickSizeOuter(0))
@@ -639,6 +637,7 @@ function DSBC() {
                                 );
                         }
                         var makeSeriesAxis = (g, yNum) => {
+
                             let seriesScale = yNum - 1 ? series2Scale : series1Scale;
                             let axisPos, translate, refreshing;
                             let sign = { 1: -1, 2: 1 }[yNum];
@@ -650,8 +649,7 @@ function DSBC() {
                                 axisPos = { 1: 'axisLeft', 2: 'axisRight' }[yNum];
                                 translate = { 1: [margin.left, 0], 2: [width - margin.right, 0] }[yNum];
                                 refreshing = g => {
-                                    g
-                                        .select('.axisName')
+                                    g.select('.axisName')
                                         .attr("transform", `rotate(${90 * sign}) translate(${[height / 2 * sign, -margin.left * 0.9]})`)
                                         .text(axisText);
                                 };
@@ -662,36 +660,28 @@ function DSBC() {
                                 refreshing = g => {
                                     let axisOrigin = seriesScale.range()[0];//0的位置
                                     let axisTextArrow = { 1: '← ', 2: ' →' }[yNum];
-                                    let axisText_arrow = axisText + axisTextArrow;
 
                                     g.selectAll('.tick').style("text-anchor", "middle");
                                     g.select('.axisName')
                                         .attr("transform", `translate(${[axisOrigin + 2 * bar_interval * sign, margin.bottom * 0.5]})`)
                                         .text(axisText)
-                                        .call(text => d3.select(text.node())
-                                            // .append('tspan')
-                                            // .attr("x", -25)
-                                            // .attr("dy", 8)
-                                            // .attr("font-size", "9")
-                                            // .text(axisTextArrow)
-                                        )
-                                    // .append('tspan')
-                                    // .attr("x", -25)
-                                    // .attr("dy", 8)
-                                    // .attr("font-size", "9")
-                                    // console.debug(d3.select(g.select('.axisName')).append('tspan'))
-
-                                    // .append('tspan')
-                                    // .text(axisTextArrow);
+                                        .append('tspan')
+                                        .attr("x", sign * bar_interval * 1.5)
+                                        .attr("dy", 2)
+                                        .attr("alignment-baseline", "middle")
+                                        .attr("font-size", 60)
+                                        .text(axisTextArrow);
+                                    // console.debug(g.node())
                                 };
                             };
 
-                            g.attr("transform", `translate(${translate})`)
+                            g
+                                .attr("transform", `translate(${translate})`)
                                 .call(removeAxis)
                                 .transition().duration(trans_duration)
                                 .call(d3[axisPos](seriesScale).ticks(null, "s").tickSizeOuter(0))
-                                .call(refreshing)
-                                .selectAll("text");
+
+                            g.call(refreshing)//有呼叫補間動畫會不能append所以另外call一次
                         }
                         subjectAxis.call(makeSubjectAxis);
                         series1Axis.call(series1Axis => makeSeriesAxis(series1Axis, 1));
@@ -830,13 +820,12 @@ function DSBC() {
                 var getSeries = (key) => {
                     //===count or size....
                     const seriesData = data[key];
-                    const subjects = seriesData.columns;
+                    // const subjects = seriesData.columns;
                     // console.debug(seriesData);
-                    // console.debug(seriesDataKeys);
-
+                    // console.debug(subjects);
                     const series = d3.stack()
                         .keys(categories)
-                        .value((subject, category) => seriesData[subject][category] || 0)//沒有值當0(bar heigth=0)
+                        .value((subject, category) => seriesData[subject] ? (seriesData[subject][category] || 0) : 0)//沒有值當0(bar heigth=0)
                         (subjects).map(d => { return d.forEach(v => v.key = d.key), d });
                     // console.debug(series1);
                     return series;
@@ -912,8 +901,9 @@ function DSBC() {
                         //=== if totalTooltip exist then do nothing
                         if (!totalTooltip_exist) {
                             let barValue = seriesIndex * subjects.length * categories.length + subjectIndex + (categories.length - 1) * subjects.length;
-                            // console.debug(barValue);
+                            // console.debug(barNodes);
                             let topRect = barNodes[barValue];
+                            // console.debug(barValue);
                             let rectMaxData = topRect.__data__[1];
                             // console.debug(topRect.__data__  );
                             let total = Number.isInteger(rectMaxData) ? rectMaxData : rectMaxData.toFixed(3);
@@ -1120,7 +1110,7 @@ function DSBC() {
                                 }
                             })
                             .on('click', function (e) {
-                                console.log('click');
+                                // console.log('click');
                                 var bar = d3.select(this);
                                 var clicked = bar.classed('clicked');
                                 // console.debug(clicked);
