@@ -1,11 +1,11 @@
-# PieChart
+# DSBC
 
 ## 函數
 |Property        | Usage           | Default  | Required |
 |:------------- |:-------------|:-----:|:-----:|
 | data | Chart data | none | yes |
 | selector | DOM selector to attach the chart to | body | no |
-
+| string | string to change subject and category default string | {} | no |
 ## 需要資源
 * [d3.js](https://d3js.org/)
 * jquery
@@ -13,48 +13,32 @@
 
 ## 用法
 
-1. 引入d3、jquery、bootstrap 和 pie.js、pie.css
+1. 引入d3、jquery、bootstrap 和 DSBC.js、DSBC.css
 ```javascript
     <script src="../src/jquery/jquery-3.5.1.min.js"></script>
     <script src="../src/d3/d3.min.js"></script>
     <script src="../src/bootstrap-4.5.3-dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../src/pie.js"></script>
+    <script src="../src/DSBC.js"></script>
     <link rel="stylesheet" href="../src/bootstrap-4.5.3-dist/css/bootstrap.min.css">
-    <link href="../src/pie.css" rel="stylesheet">
+    <link href="../src/DSBC.css" rel="stylesheet">
 ```
-2. pieChart().data()裡面填入物件陣列,每個物件都當作一組pie圖（不同年份的圖要分開畫的時候）
-
+2. DSBC().data()裡面填入物件陣列,每個物件都當作一組圖(多圖有些互動事件可能有bug,之後要用多圖再修),
+   資料的結構在example有,第二層跟第三層對調能畫出以年分析圖(ex:data(按資料庫)和data2(按年)),
+   DSBC().string({ subject: '年', category: '資料庫' })是用來替換資料第二層(subject)和第三層(category)
+   字串的,不填會是預設的'subject'和'category'
+   
 ```javascript
 // chart data example
-    var data = {
-                "count": {
-                    "CWBSN": 1032,
-                    "MAGNET": 68,
-                    "GNSS": 72,
-                    "GW": 27,
-                    "TSMIP": 228,
-                    "total": 1427
-                },
-                "file_size": {
-                    "CWBSN": "153.17 GB",
-                    "MAGNET": "7.91 GB",
-                    "GNSS": "39.85 GB",
-                    "GW": "3.93 GB",
-                    "TSMIP": "138.34 GB",
-                    "total": "343.21 GB"
-                }
-            };
+ 
     var title = '全體下載量';
     var obj = { data: data, title: title };
-    
-    var Data = [obj, obj];
+    var Data = [obj,];
+        var chart = DSBC()
+            .data(Data)
+            .string({ subject: '資料庫', category: '年' })
+            // .string({ subject: '年', category: '資料庫' })
+            .selector('.container');
+        chart();
 
-    var chart = pieChart()
-        .data(Data)
-        .selector('.container');
-    chart();
 ```
-## 更新
-2021/6/16 : 
-* 資料值爲0的不顯示了
-* 小於1的值自動轉換到值會大於1的單位(轉換極限到bit)
+
